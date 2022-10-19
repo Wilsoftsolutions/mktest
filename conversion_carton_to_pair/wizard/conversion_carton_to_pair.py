@@ -29,14 +29,14 @@ class ConversionCartonToPair(models.TransientModel):
                 'product_uom_qty': i.sh_qty,
                 'name': i.sh_product_id.name,
                 'company_id': self.company_id.id,
-                'location_id': self.source_id.id,
-                'location_dest_id': self.location_id.id,
+                'location_id': self.location_id.id,
+                'location_dest_id':self.source_id.id,
             }))
         out_picking_value.update({
-            # 'partner_id': 4188,
+            'partner_id': 4188,
             'picking_type_id': self.picking_type_id.id,
-            'location_id': self.source_id.id,
-            'location_dest_id': self.location_id.id,
+            'location_id': self.location_id.id,
+            'location_dest_id': self.source_id.id,
             'move_lines': out_move_lines,
         })
         self.env['stock.picking'].create(out_picking_value)
@@ -51,7 +51,7 @@ class ConversionCartonToPair(models.TransientModel):
             'location_dest_id': self.location_id.id,
         }))
         in_picking_value.update({
-            # 'partner_id': 4188,
+            'partner_id': 4188,
             'picking_type_id': self.picking_type_id.id,
             'location_id': self.source_id.id,
             'location_dest_id': self.location_id.id,
