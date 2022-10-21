@@ -6,6 +6,24 @@ from odoo import models, fields, api
 class InheritStockPicking(models.Model):
     _inherit = 'stock.picking'
 
+    def reconcile_payment(self, payment_id=None, invoice=None):
+        """ This method is use to reconcile payment.
+            @author: twinkalc.
+            Migration done by Haresh Mori on September 2021
+        """
+        move_line_obj = self.env['account.move.line']
+        domain = [('account_internal_type', 'in', ('receivable', 'payable')),
+                  ('reconciled', '=', False)]
+        line_ids = move_line_obj.search([('move_id', '=', invoice.id)])
+        to_reconcile = [line_ids.filtered( \
+            lambda line: line.account_internal_type == 'receivable')]
+
+        for payment, lines in zip([payment_id], to_reconcile):
+            payment_lines = payment.line_ids.filtered_domain(domain)
+            for account in payment_lines.account_id:
+                (payment_lines + lines).filtered_domain([('account_id', '=', account.id),
+                                                         ('reconciled', '=', False)]).reconcile()
+
     def button_validate(self):
         res = super(InheritStockPicking, self).button_validate()
         if self.name.split('/')[1].upper() == 'RET':
@@ -20,14 +38,24 @@ class InheritStockPicking(models.Model):
                     if rec.product_id.id == ship_cost_p_id:
                         cr_note.write({
                             'invoice_line_ids': [(0, 0, {
+                                'state': 'posted',
                                 'product_id': ship_cost_p_id,
                                 'price_unit': rec.price_unit,
                                 'tax_ids': [(6, 0, rec.tax_id.ids)],
                                 'discount': rec.discount
                             })]
                         })
-                    else:
-                        return res
+                cr_note.action_post()
+                related_invoice = self.env['account.move'].search([('invoice_origin', '=', cr_note.invoice_origin)])
+                only_invoices = related_invoice.filtered(
+                    lambda invoice: invoice.name.split('/')[0].upper() != "RINV" and invoice.payment_state in [
+                        'not_paid', 'partial'])
+                only_invoices = only_invoices[0] if only_invoices else only_invoices
+                move_lines = cr_note.line_ids.filtered(
+                    lambda line: line.account_internal_type in ('receivable', 'payable') and not line.reconciled)
+                for line in move_lines:
+                    only_invoices.js_assign_outstanding_line(line.id)
+                return res
             else:
                 return res
         return res
