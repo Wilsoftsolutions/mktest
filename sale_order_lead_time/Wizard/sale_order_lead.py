@@ -81,6 +81,7 @@ class PartnerXlsx(models.AbstractModel):
         today_date = datetime.date.today()
         delivery_approve_days = 0
         invoice_approve_days = 0
+        order_approve_days = 0
         for rec in sales:
             invoice = self.env['account.move'].search([('invoice_origin', '=', rec.name)],limit=1)
             delivery = self.env['stock.picking'].search([('origin', '=', rec.name)], limit=1)
