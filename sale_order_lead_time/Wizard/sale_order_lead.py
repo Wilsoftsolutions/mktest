@@ -89,14 +89,14 @@ class PartnerXlsx(models.AbstractModel):
                 order_approve_days = rec.approve_date - rec.create_date.date()
 
             if delivery:
-                if delivery.scheduled_date:
-                   delivery_approve_days = delivery.scheduled_date.date() - rec.date_order.date()
+                if delivery.scheduled_date and rec.approve_date:
+                   delivery_approve_days = rec.approve_date - rec.date_order.date()
             else:
                 delivery_approve_days = 0
 
             if invoice:
-                if invoice.invoice_date:
-                    invoice_approve_days = rec.date_order.date() - invoice.invoice_date
+                if invoice.invoice_date and rec.approve_date:
+                    invoice_approve_days = rec.approve_date - invoice.invoice_date
             else:
                 invoice_approve_days = 0
 
