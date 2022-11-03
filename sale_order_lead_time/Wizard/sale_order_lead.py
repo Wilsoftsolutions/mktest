@@ -103,7 +103,7 @@ class PartnerXlsx(models.AbstractModel):
             rec_list.append({
                 'ref': rec.name,
                 'source_doc': delivery.name,
-                'location': delivery.location_id.name,
+                'location': delivery.location_id.display_name,
                 'order_date': rec.date_order.date() if rec.date_order.date() else '-',
                 'approval_date': rec.approve_date if rec.approve_date else '-',
                 'approval_days': order_approve_days if order_approve_days else 0,
